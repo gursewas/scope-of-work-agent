@@ -1,0 +1,4 @@
+fastmcp==2.2.0
+openai
+python-dotenv==1.0.1
+uvicorn

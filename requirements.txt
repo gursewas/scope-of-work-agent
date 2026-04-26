@@ -1,0 +1,16 @@
+# Core dependencies
+agency-swarm[fastapi]>=1.0.0b3
+python-dotenv==1.0.1
+
+# MCP Server dependencies
+fastmcp>=2.0.0,<2.9.0
+
+# Modern PDF generation
+weasyprint>=62.0  # Modern HTML/CSS to PDF with markdown support
+markdown>=3.7     # Full-featured markdown parser with extensions
+beautifulsoup4>=4.12.0  # HTML parsing and manipulation
+
+pydantic>=2.0.0
+gradio>=4.0.0
+httpx>=0.24.0
+uvicorn>=0.30.0
