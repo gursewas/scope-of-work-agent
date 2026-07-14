@@ -4,13 +4,14 @@ FastAPI wrapper for the Civil Engineering Scope of Work agent.
 Accepts project details via POST and returns the generated report.
 """
 
+import logging
 import os
 import sys
 import tempfile
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -21,12 +22,18 @@ load_dotenv()
 from civil_agent import agency
 from utils.pdf import save_research_to_pdf
 
+logger = logging.getLogger(__name__)
+
 app = FastAPI(title="Scope of Work Agent API")
 
-# Allow requests from any origin (restrict to your portfolio domain in production)
+ALLOWED_ORIGINS = [
+    "https://www.gursewak-singh.com",
+    "https://gursewak-singh.com",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -74,7 +81,14 @@ def build_prompt(inputs: ProjectInput) -> str:
 async def generate_scope_of_work(inputs: ProjectInput):
     """Generate a Scope of Work document from project details."""
     combined_prompt = build_prompt(inputs)
-    response = await agency.get_response(combined_prompt)
+    try:
+        response = await agency.get_response(combined_prompt)
+    except Exception:
+        # Let the error surface as a normal response so it keeps its CORS
+        # headers; an unhandled exception returns a bare 500 that the browser
+        # reports as a CORS failure instead.
+        logger.exception("Scope of work generation failed")
+        raise HTTPException(status_code=502, detail="Scope of work generation failed.")
     return {"report": response.final_output}
 
 
